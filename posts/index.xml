@@ -12,13 +12,12 @@
        
        
        <item>
-         <title>Corfu a Distributed Shared Log</title>
+         <title>CORFU: A Distributed Shared Log</title>
          <link>https://kernelmapper.github.io/posts/corfu-a-distributed-shared-log/</link>
          <pubDate>Thu, 30 Apr 2020 15:00:00 +0000</pubDate>
          
          <guid>https://kernelmapper.github.io/posts/corfu-a-distributed-shared-log/</guid>
-         <description>&lt;h1 id=&#34;corfu-a-distributed-shared-log&#34;&gt;CORFU: A Distributed Shared Log&lt;/h1&gt;
-&lt;p&gt;Link: &lt;a href=&#34;https://doi.org/10.1145/2535930&#34;&gt;https://doi.org/10.1145/2535930&lt;/a&gt;&lt;/p&gt;
+         <description>&lt;p&gt;Link: &lt;a href=&#34;https://doi.org/10.1145/2535930&#34;&gt;https://doi.org/10.1145/2535930&lt;/a&gt;&lt;/p&gt;
 &lt;h2 id=&#34;what-is-corfu&#34;&gt;What is CORFU?&lt;/h2&gt;
 &lt;p&gt;CORFU is distributed shared log to support strong consistency, fault tolerance,
 durability and total order. It can be building block of various distributed
