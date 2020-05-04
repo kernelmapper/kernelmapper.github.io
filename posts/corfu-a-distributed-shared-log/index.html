@@ -7,7 +7,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="description" content="The HTML5 Herald" />
-  <meta name="author" content="Injun Song" /><meta name="generator" content="Hugo 0.69.2" />
+  <meta name="author" content="default" /><meta name="generator" content="Hugo 0.69.2" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css" />
   <script src="https://kit.fontawesome.com/b76b73e8e8.js" crossorigin="anonymous"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
@@ -54,7 +54,7 @@
         <aside>
     <ul>
         <li>
-            <time class="post-date" datetime="2020-05-04T15:58:38&#43;09:00">May 4, 2020</time>
+            <time class="post-date" datetime="2020-04-30T15:00:00Z">Apr 30, 2020</time>
         </li>
         
 
@@ -66,7 +66,176 @@
 
     
 
-    
+    <h1 id="corfu-a-distributed-shared-log">CORFU: A Distributed Shared Log</h1>
+<p>Link: <a href="https://doi.org/10.1145/2535930">https://doi.org/10.1145/2535930</a></p>
+<h2 id="what-is-corfu">What is CORFU?</h2>
+<p>CORFU is distributed shared log to support strong consistency, fault tolerance,
+durability and total order. It can be building block of various distributed
+systems like:</p>
+<ul>
+<li>replicated transactional systems (e.g., Hyder)</li>
+<li>consensus engine</li>
+<li>replicated state machines</li>
+<li>metadata services</li>
+</ul>
+<h2 id="design">Design</h2>
+<p><img src="./figs/corfu-a-distributed-shared-log-fig-01.png" alt="CORFU Fig. 1"></p>
+<h3 id="client">Client</h3>
+<p>CORFU client has very simple interfaces - append, read, trim and fill.</p>
+<blockquote>
+<p>In CORFU, each position in the shared log is projected onto a set of storage
+pages on different storage units. The projection map is maintained -
+consistently and compactly - at the clients.</p>
+</blockquote>
+<h4 id="read">read</h4>
+<blockquote>
+<p>The read interface accepts a position in the log and returns the entry at that
+position.</p>
+</blockquote>
+<blockquote>
+<p>a client uses its local copy of the map to determine a corresponding physical
+storage page, and then directly issues a read to the storage unit storing that
+page</p>
+</blockquote>
+<h4 id="append">append</h4>
+<blockquote>
+<p>The append interface adds an entry to the log and returns its position.</p>
+</blockquote>
+<blockquote>
+<p>a client first determines the next available position in the shared log-using
+a sequencer node as an optimization for avoiding contention with other
+appending clients-and then writes data directly to the set of physical storage
+pages mapped to that position</p>
+</blockquote>
+<h4 id="trim">trim</h4>
+<blockquote>
+<p>The application can perform garbage collection using trim, which indicates to
+CORFU that no valid data exists at a specific log position.</p>
+</blockquote>
+<h4 id="fill">fill</h4>
+<blockquote>
+<p>The application can fill a position in the log, which may be needed to fill
+gaps in the log with valid content.</p>
+</blockquote>
+<h3 id="storage-unit">Storage Unit</h3>
+<p>Storage units support READs and WRITEs on an infinite, logical address space of
+fixed-size pages. Address space of storage units should have &ldquo;write-once&rdquo; semantics.
+Client can indicate that the storage page will not use anymore by using DELETE
+command. DELETE is used by trim.</p>
+<blockquote>
+<p>a read succeeds if the address exists in the hash-map and does not have the
+deleted bit set. It returns err_deleted if the deleted bit is set, and
+err_unwritten if the address does not exist in the hash-map. A write to an
+address that exists in the hash-map returns err_deleted if the deleted bit is
+set and err_written if it is not. If the address is not in the hash-map, the
+write succeeds.</p>
+</blockquote>
+<p>Fill writes junk at high priority.</p>
+<blockquote>
+<p>&hellip; the storage unit points the hash-map entry to special address reserved for
+junk; this ensures that storage pages are not wasted.</p>
+</blockquote>
+<p>SEAL command is used for reconfiguration of CORFU cluster. A client sends
+messages tagged with epoch number to a storage unit. The storage unit rejects
+messages with epoch numbers equal or lower to the sealed epoch. In the
+acknowledgment of the seal command, the highest logical page address in the
+storage unit is included.</p>
+<blockquote>
+<p>&hellip; the storage unit maintains an epoch number s_epoch and rejects all
+messages tagged with equal or lower epochs, sending back an err_sealed error
+code. When a seal command arrives with a new epoch to seal, the storage unit
+first flushes all ongoing operations and then updates its s_epoch. In then
+responds to the seal command with highaddr, the highest address written in the
+address space it exposes, this is required for reconfiguration, &hellip;</p>
+</blockquote>
+<h3 id="sequencer">Sequencer</h3>
+<p>Clients have to find the log tail to append log to CORFU. Sequencer is like
+token generator to find empty log positions.</p>
+<blockquote>
+<p>The sequencer can be thought of as a simple networked counter. To append data,
+a client first goes to the sequencer, which returns its current value and
+increments itself. The client has now reserved a position in the log and can
+write to it without contention from other clients.</p>
+</blockquote>
+<p>When a sequencer fails, reconfiguration is occurred to change sequencer. The
+highest page in each storage unit is acquired by using seal command.</p>
+<p>When a client obtains tokens and then fails before using the position, the log
+has a hole at that position. The solution is that other clients use fill
+command with junk value.</p>
+<h3 id="replication">Replication</h3>
+<p>CORFU uses simple client-driven chain replication because of these:</p>
+<ul>
+<li>minimal design of storage units - no communication between storage units</li>
+<li>f + 1 replicas / f failure tolerance</li>
+<li>fast reads</li>
+</ul>
+<blockquote>
+<p>When a client wants to write to a replica set of storage pages (after having
+obtained a token for this position), it updates them in a deterministic order,
+waiting for each storage unit to respond before moving to the next one. The
+write is successfully completed when the last storage unit in the chain is
+updated.</p>
+</blockquote>
+<blockquote>
+<p>To read from the replica set, clients have two options. If the reading client
+already knows that the log position has been successfully written to (for
+example, via an out-of-band notification by the writing client), it can go to
+any replica in the chain for better read performance. Alternatively, a reader
+may probe the last unit of the chain to check if a write has completed.</p>
+</blockquote>
+<p>There are three kinds of failures:</p>
+<ul>
+<li>
+<p>append failure of clients</p>
+<blockquote>
+<p>To fill holes, the client starts by checking the first unit of the chain to
+determine if a valid value exists in the prefix of the chain. If such a value
+exists, the client walks down the chain to find the first unwritten replica,
+and then &ldquo;completes&rdquo; the append by copying over the value to the remaining
+unwritten replicas in chain order. Alternatively, if the first unit of the
+chain is unwritten, the client writes the junk value to all the replicas in
+chain order.</p>
+</blockquote>
+</li>
+<li>
+<p>failure or upgrades of storage units, thus need to reconfiguration</p>
+</li>
+<li>
+<p>read failure of clients</p>
+<blockquote>
+<p>&hellip; a projection is chagned to remove a working unit, for example, due to a
+network disruption that causes the unit to temporarily detach. Some clients
+may remain uninformed about the reconfiguration, perhaps having detached from
+the main partition of the system due to the same network disruption. If this
+unit sotred the last page in a replica set for some position in the previous
+projection, this client might conitnue to probe this unit for the status of
+this log position. Then the client may obtain an err_unwritten error code,
+even after the position has been completetly written in the new configuration.</p>
+</blockquote>
+<p>To cope with this problem, there are two options:</p>
+<ul>
+<li>slow read path: reads go to all replicas unless clients know an entry is
+written</li>
+<li>leases of storage units like heartbeat
+<blockquote>
+<p>Another solution is to assign leases to storage units, which
+automiatically expire unless the unit periodically renews them. Some
+entity in the system, for example, the sequencer, must manage these
+leases, which is not a heavy burden, as renewals are perfomed at fairly
+coarse intervals (typically in the order of seconds). However, a cost
+associated with this approach is that we need to wait for a lease
+expiration before we can remove a unit from the configuration.</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="finishing-in-the-middle-of-corfu">Finishing in the middle of CORFU</h2>
+<p>I read this paper in the eyes of an engineer to implement the new log system.
+The CORFU gives us a good starting point of distributed log systems for strong
+consistency. I will plan to review more papers and open sources related to this
+topic.</p>
+
 
 </article>
 
