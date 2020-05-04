@@ -1,0 +1,24 @@
+
+   <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+     <channel>
+       <title>Posts on mapping the kernel</title>
+       <link>https://kernelmapper.github.io/posts/</link>
+       <description>Recent content in Posts on mapping the kernel</description>
+       <generator>Hugo -- gohugo.io</generator>
+       <language>en-us</language>
+       <lastBuildDate>Mon, 04 May 2020 15:58:38 +0900</lastBuildDate>
+       
+           <atom:link href="https://kernelmapper.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+       
+       
+       <item>
+         <title>Corfu a Distributed Shared Log</title>
+         <link>https://kernelmapper.github.io/posts/corfu-a-distributed-shared-log/</link>
+         <pubDate>Mon, 04 May 2020 15:58:38 +0900</pubDate>
+         
+         <guid>https://kernelmapper.github.io/posts/corfu-a-distributed-shared-log/</guid>
+         <description></description>
+       </item>
+       
+     </channel>
+   </rss>
