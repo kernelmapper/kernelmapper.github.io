@@ -23,5 +23,14 @@ What is CORFU? CORFU is distributed shared log to support strong consistency, fa
  In CORFU, each position in the shared log is projected onto a set of storage pages on different storage units.</description>
     </item>
     
+    <item>
+      <title>About</title>
+      <link>https://kernelmapper.github.io/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://kernelmapper.github.io/about/</guid>
+      <description></description>
+    </item>
+    
   </channel>
 </rss>
