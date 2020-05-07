@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Apache BookKeeper - mapping the kernel</title><link rel="icon" type="image/png" href= /><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Apache BookKeeper" />
+<meta property="og:description" content="Link:
+ https://bookkeeper.apache.org https://doi.org/10.1145/2433140.2433144  Apache BookKeeper The Apache BookKeeper is open-source log storage with durability, strong consistency, and high performance." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://kernelmapper.github.io/posts/apache-bookkeeper/" />
+<meta property="article:published_time" content="2020-05-07T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-05-07T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Apache BookKeeper"/>
+<meta name="twitter:description" content="Link:
+ https://bookkeeper.apache.org https://doi.org/10.1145/2433140.2433144  Apache BookKeeper The Apache BookKeeper is open-source log storage with durability, strong consistency, and high performance."/>
+<link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,300italic,400italic|Raleway:200,300" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" media="screen" href="https://kernelmapper.github.io/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://kernelmapper.github.io/css/main.css" />
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+	<script src="https://kernelmapper.github.io/js/main.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper post">
+		<div class="header">
+	<h1 class="site-title"><a href="https://kernelmapper.github.io/">mapping the kernel</a></h1>
+	<div class="site-description"><h2>stories about system software</h2><nav class="nav social">
+			<ul class="flat"><a href="https://github.com/ijsong" title="Github"><i data-feather="github"></i></a><a href="https://www.linkedin.com/in/ijsong/" title="Linkedin"><i data-feather="linkedin"></i></a><a href="/index.xml" title="RSS"><i data-feather="rss"></i></a></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Posts</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post-header">
+			<h1 class="title">Apache BookKeeper</h1>
+			<div class="meta">Posted at &mdash; May 7, 2020</div>
+		</div>
+
+		<div class="markdown">
+			<p>Link:</p>
+<ul>
+<li><a href="https://bookkeeper.apache.org">https://bookkeeper.apache.org</a></li>
+<li><a href="https://doi.org/10.1145/2433140.2433144">https://doi.org/10.1145/2433140.2433144</a></li>
+</ul>
+<h2 id="apache-bookkeeper">Apache BookKeeper</h2>
+<p>The Apache BookKeeper is open-source log storage with durability, strong
+consistency, and high performance.</p>
+<h2 id="basic-concepts">Basic Concepts</h2>
+<h3 id="ledger">Ledger</h3>
+<p>Ledger is a log file (aka log segment), and it is a sequence of entries.</p>
+<h3 id="ledger-entry">Ledger Entry</h3>
+<p>Ledger Entry (aka record) is an unit of log, thus it contains actual data with its
+metadata. It is a sequence of bytes. It consists of several fields:</p>
+<ul>
+<li>Ledger number: the ID of the ledger</li>
+<li>Entry number: the unique ID of the entry</li>
+<li>Last confirmed (LC or LAC - last add confirmed): the ID of the last recorded entry</li>
+<li>Data: the entry&rsquo;s data which is type of byte array</li>
+<li>Authentication code</li>
+</ul>
+<h3 id="bookie">Bookie</h3>
+<p>Bookie is a storage server. It storeas ledger fragments.</p>
+<p><img src="/images/posts/apache_bookkeeper_fig_01.png" alt="Bookie Architecture" title="Bookie Architecture"></p>
+<blockquote>
+<p>A bookie uses two devices, ideally in separate physical devices: a journal
+device and a ledger device. The journal device is a write-ahead log and stores
+synchronously and sequentially all updates the bookie executes. The ledger
+device contains an indexed copy of a ledger fragment, which a bookie uses to
+respond to read requests. Writes to the ledger device are asynchronous.</p>
+</blockquote>
+<h3 id="client">Client</h3>
+<p>BookKeeper client is used by applications. It handles requests of applications.
+BookKeeper assumes that there is only one ledger writer that is client writing
+to a ledger.</p>
+<h2 id="apis">APIs</h2>
+<p>Apache BookKeeper has two levels of APIs:</p>
+<ul>
+<li>Ledger API: low-level API for communicating with ledgers directly</li>
+<li>DistributedLog API: high-level API for using BookKeeper</li>
+</ul>
+<p>In this article, I am focusing ledger API.</p>
+<p>To create a ledger, a client selects bookies to make ledger, and it stores those
+bookies information to metadata storage - which is Apache ZooKeeper. For
+fault-tolerance, the client selects f + 1 bookies, thus it can guarantee f
+bookies failures without losing data integrity. After successding to create the
+ledger, the client gets ledger handle.  To append ledger entry, the client which
+is the ledger writer replicates the entry into f + 1 bookies (quorum size).</p>
+<p><img src="/images/posts/apache_bookkeeper_fig_02.png" alt="BookKeeper operation" title="BookKeeper operation"></p>
+<p>After closing a ledger, BookKeeper writes the last entry written successfully
+into metadata storage - Apache ZooKeeper. All clients reading from the closed
+ledger see the same sequence of ledger entries.</p>
+<blockquote>
+<p>We also enable clients to read from open ledgers. When clients need to read
+from an open ledger, they invoke a call to open the ledger that does not try
+to recover it if it is not closed. To aoid reading partially replicated
+entries from the ledger, which may not be in the ledger once it is closed, the
+client asks bookies for their LAC values. Reading entry i &lt;= LAC is safe,
+since the ledger writer has marked it as successfully replicated.</p>
+</blockquote>
+<h2 id="recovery">Recovery</h2>
+<p>In case of failure of ledger writer before closing an open ledger, other ledger
+readers do not know last entry of the ledger. Recovery mechanism have to close
+the ledger.
+A client which is a ledger reader opens a ledger to read it. To do that, the
+ledger reader gets metadata of the ledger from metadata storage. According to
+the state of the ledger, the ledger reader triggers a recovery procedure.</p>
+<blockquote>
+<p>The first step of recovery for a given ledger consists of having the reader
+client asking each bookie in the ensemble for the last add confirmed (LAC)
+field in the last entry that the bookie has processed for the ledger. &hellip;
+Since reads are based on entry id, the recovery process can start reading from
+the highest LAC it receives, and consequently it is not necessary to read the
+entire ledger.</p>
+</blockquote>
+<p>The ledger reader reads entries starting from the highest LAC, and rereplicates
+entries if needed.</p>
+
+		</div>
+
+		<div class="post-tags">
+			
+				
+			
+		</div>
+		</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> <a href="https://github.com/vividvilla/ezhil">Ezhil theme</a> | Built with <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+
+<script>feather.replace()</script>
+</body>
+</html>
