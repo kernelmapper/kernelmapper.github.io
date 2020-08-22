@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Scalog: Seamless Reconfiguration and Total Order in a Scalable Shared Log - mapping the kernel</title><link rel="icon" type="image/png" href= /><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta property="og:title" content="Scalog: Seamless Reconfiguration and Total Order in a Scalable Shared Log" />
+<meta property="og:description" content="Link: https://www.usenix.org/conference/nsdi20/presentation/ding
+Scalog Scalog is another shared log similar to CORFU. Like CORFU, it has Data Layer that stores logs. Unlike CORFU, it has no sequencer, however, it has Ordering Layer." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://kernelmapper.github.io/posts/scalog-seamless-reconfiguration-and-total-order-in-a-scalable-shared-log/" />
+<meta property="article:published_time" content="2020-08-22T00:00:00+00:00" />
+<meta property="article:modified_time" content="2020-08-22T00:00:00+00:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Scalog: Seamless Reconfiguration and Total Order in a Scalable Shared Log"/>
+<meta name="twitter:description" content="Link: https://www.usenix.org/conference/nsdi20/presentation/ding
+Scalog Scalog is another shared log similar to CORFU. Like CORFU, it has Data Layer that stores logs. Unlike CORFU, it has no sequencer, however, it has Ordering Layer."/>
+<link href="https://fonts.googleapis.com/css?family=Ubuntu:300,400,300italic,400italic|Raleway:200,300" rel="stylesheet">
+
+	<link rel="stylesheet" type="text/css" media="screen" href="https://kernelmapper.github.io/css/normalize.css" />
+	<link rel="stylesheet" type="text/css" media="screen" href="https://kernelmapper.github.io/css/main.css" />
+
+	<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+	<script src="https://kernelmapper.github.io/js/main.js"></script>
+</head>
+
+<body>
+	<div class="container wrapper post">
+		<div class="header">
+	<h1 class="site-title"><a href="https://kernelmapper.github.io/">mapping the kernel</a></h1>
+	<div class="site-description"><h2>stories about system software</h2><nav class="nav social">
+			<ul class="flat"><a href="https://github.com/ijsong" title="Github"><i data-feather="github"></i></a><a href="https://www.linkedin.com/in/ijsong/" title="Linkedin"><i data-feather="linkedin"></i></a><a href="/index.xml" title="RSS"><i data-feather="rss"></i></a></ul>
+		</nav>
+	</div>
+
+	<nav class="nav">
+		<ul class="flat">
+			
+			<li>
+				<a href="/">Home</a>
+			</li>
+			
+			<li>
+				<a href="/posts">Posts</a>
+			</li>
+			
+		</ul>
+	</nav>
+</div>
+
+
+		<div class="post-header">
+			<h1 class="title">Scalog: Seamless Reconfiguration and Total Order in a Scalable Shared Log</h1>
+			<div class="meta">Posted at &mdash; Aug 22, 2020</div>
+		</div>
+
+		<div class="markdown">
+			<p>Link: <a href="https://www.usenix.org/conference/nsdi20/presentation/ding">https://www.usenix.org/conference/nsdi20/presentation/ding</a></p>
+<h2 id="scalog">Scalog</h2>
+<p>Scalog is another shared log similar to <a href="https://kernelmapper.github.io/posts/corfu-a-distributed-shared-log/">CORFU</a>. Like CORFU, it has Data Layer that stores logs. Unlike CORFU, it has no sequencer, however, it has Ordering Layer.</p>
+<p><img src="/images/posts/scalog_fig_01.png" alt="scalog_fig_01"></p>
+<p>The novel approach of the Scalog is the ordering layer and its append workflow.</p>
+<h3 id="ordering-layer">Ordering Layer</h3>
+<blockquote>
+<p>The ordering layer periodically summarizes the fully replicated prefix of the primary log segment of each storage server in a cut, which it then shares with all storage servers.
+&hellip;
+The storage servers use these cuts to deterministically assign a unique global sequence number to each durable record in their log segments</p>
+</blockquote>
+<p><img src="/images/posts/scalog_fig_02.png" alt="scalog_fig_02"></p>
+
+		</div>
+
+		<div class="post-tags">
+			
+				
+			
+		</div>
+		</div>
+	<div class="footer wrapper">
+	<nav class="nav">
+		<div> <a href="https://github.com/vividvilla/ezhil">Ezhil theme</a> | Built with <a href="https://gohugo.io">Hugo</a></div>
+	</nav>
+</div>
+
+
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-165822376-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+<script>feather.replace()</script>
+</body>
+</html>

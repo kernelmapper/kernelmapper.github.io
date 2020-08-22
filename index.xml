@@ -6,10 +6,20 @@
     <description>Recent content on mapping the kernel</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 07 May 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 22 Aug 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://kernelmapper.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Scalog: Seamless Reconfiguration and Total Order in a Scalable Shared Log</title>
+      <link>https://kernelmapper.github.io/posts/scalog-seamless-reconfiguration-and-total-order-in-a-scalable-shared-log/</link>
+      <pubDate>Sat, 22 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>https://kernelmapper.github.io/posts/scalog-seamless-reconfiguration-and-total-order-in-a-scalable-shared-log/</guid>
+      <description>Link: https://www.usenix.org/conference/nsdi20/presentation/ding
+Scalog Scalog is another shared log similar to CORFU. Like CORFU, it has Data Layer that stores logs. Unlike CORFU, it has no sequencer, however, it has Ordering Layer.</description>
+    </item>
     
     <item>
       <title>Apache BookKeeper</title>
